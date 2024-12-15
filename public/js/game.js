@@ -1,14 +1,11 @@
 class WordSearchGame {
-	constructor() {
+	constructor(config = {}) {
+		this.gameId = null;
+        this.size = config.size || 10;
+        this.difficulty = config.difficulty || 'medium';
+        this.words = config.words || [];
+        this.directions = this.getDirectionsForDifficulty(config.difficulty);
 		this.grid = [];
-		this.words = [];
-		this.size = 10;
-		this.directions = [
-			[0, 1],   // right
-			[1, 0],   // down
-			[1, 1],   // diagonal right-down
-			[-1, 1],  // diagonal right-up
-		];
 		this.isSelecting = false;
 		this.selectedCells = [];
 		this.foundWords = new Set();
@@ -16,41 +13,73 @@ class WordSearchGame {
 		this.autoSaveTimeout = null;
 	}
 
-	startNewGame() {
+	getDirectionsForDifficulty(difficulty) {
+        const directions = {
+            easy: [
+                [0, 1],   // right
+                [1, 0],   // down
+            ],
+            medium: [
+                [0, 1],   // right
+                [1, 0],   // down
+                [1, 1],   // diagonal right-down
+                [-1, 1],  // diagonal right-up
+            ],
+            hard: [
+                [0, 1],   // right
+                [1, 0],   // down
+                [1, 1],   // diagonal right-down
+                [-1, 1],  // diagonal right-up
+                [0, -1],  // left
+                [-1, 0],  // up
+                [-1, -1], // diagonal left-up
+                [1, -1],  // diagonal left-down
+            ]
+        };
+        return directions[difficulty] || directions.medium;
+    }
+
+	setDifficulty(level) {
+        this.difficulty = level;
+        this.directions = this.getDirectionsForDifficulty();
+    }
+
+	startNewGame(forceNew = false) {  // Add forceNew parameter
+		if (forceNew === false) {
+			console.error('forceNew is false');
+		}
 		const gameGrid = document.getElementById('game-grid');
 		const gameSummary = document.getElementById('game-summary');
 		const wordList = document.getElementById('word-list');
-
+	
 		gameGrid.style.display = 'grid';
 		wordList.style.display = 'block';
 		gameSummary.style.display = 'none';
-
+	
 		// Clear any existing auto-save timeout
 		if (this.autoSaveTimeout) {
 			clearTimeout(this.autoSaveTimeout);
 			this.autoSaveTimeout = null;
 		}
-
+	
 		checkTokenExpiration();
+		this.gameId = null;
 		this.grid = [];
 		this.words = [];
 		this.foundWords.clear();
 		this.selectedCells = [];
 		this.gameActive = true;
-		this.loadGameState().then(loaded => {
-			if (!loaded) {
-				// If no saved game, start new one
-				this.initializeGrid();
-			}
-			this.renderGrid();
-		});
+		
+		this.initializeGrid();
+		this.renderGrid();
 	}
 
 	initializeGrid() {
 		// Create empty grid
 		this.grid = Array(this.size).fill().map(() => Array(this.size).fill(''));
 
-		// Sample words (you can modify this list or load from external source)
+		// Sample words
+		// TODO: Implement word generation/retrieval server side
 		const wordList = ['HELLO', 'WORLD', 'GAME', 'PLAY', 'FUN'];
 
 		// Add words to the grid
@@ -141,10 +170,10 @@ class WordSearchGame {
 			this.gameActive = false;
 			setTimeout(() => {
 				const playAgain = confirm('Congratulations! You found all the words! Would you like to play again?');
+				// TODO: add confirmation text to game summary and simplify this
 				if (playAgain) {
-					this.startNewGame();
+					this.startNewGame(true);
 				} else {
-					// Optional: Show a summary or return to main menu
 					this.showGameSummary();
 				}
 			}, 500);
@@ -192,7 +221,6 @@ class WordSearchGame {
 		const gameGrid = document.getElementById('game-grid');
 		gameGrid.innerHTML = '';
 
-		// Always render the grid, even for completed games
 		for (let i = 0; i < this.size; i++) {
 			for (let j = 0; j < this.size; j++) {
 				const cell = document.createElement('div');
@@ -228,7 +256,6 @@ class WordSearchGame {
 		this.renderWordList();
 	}
 
-	// Add this new helper method to check if a cell is part of a found word
 	isCellInFoundWord(row, col) {
 		for (const word of this.foundWords) {
 			// For each possible starting position that could include our cell
@@ -403,13 +430,10 @@ class WordSearchGame {
 	scheduleAutoSave() {
 
 		// Don't schedule saves for completed games
-		if (!this.gameActive) {
-			return;
-		}
+		if (!this.gameActive) return;
 
-		if (this.autoSaveTimeout) {
-			clearTimeout(this.autoSaveTimeout);
-		}
+		if (this.autoSaveTimeout) clearTimeout(this.autoSaveTimeout);
+		
 		this.autoSaveTimeout = setTimeout(() => {
 			this.saveGameState()
 		}, 1000);
@@ -417,25 +441,31 @@ class WordSearchGame {
 
 	async saveGameState() {
 		// Don't save if we're just viewing a completed game
-		if (!this.gameActive) {
-			return;
-		}
+		if (!this.gameActive) return;
 
 		try {
 			const gameState = {
 				grid: this.grid,
 				words: this.words,
 				foundWords: Array.from(this.foundWords),
-				completed: this.foundWords.size === this.words.length
+				completed: this.foundWords.size === this.words.length,
+				difficulty: this.difficulty
 			};
+			const url = this.gameId
+				? `/api/game/save/${this.gameId}`
+				: '/api/game/save';
 
-			const response = await fetch('/api/game/save', {
-				method: 'POST',
+			const response = await fetch(url, {
+				method: this.gameId ? 'PUT' : 'POST',
 				headers: getAuthHeaders(),
 				body: JSON.stringify(gameState)
 			});
-
-			if (!response.ok) {
+			if (response.ok) {
+				if (!this.gameId) {
+					const data = await response.json();
+					this.gameId = data.gameId;
+				}
+			} else {
 				console.error('Failed to save game state');
 			}
 		} catch (error) {
@@ -456,12 +486,13 @@ class WordSearchGame {
 
 			if (response.ok) {
 				const gameState = await response.json();
+				this.gameId = gameState.gameId;
 				this.grid = gameState.grid;
 				this.words = gameState.words;
 				this.foundWords = new Set(gameState.foundWords);
 				this.gameActive = !gameState.completed;
-
-				// Render the grid without saving a new game state
+				this.difficulty = gameState.difficulty || 'medium';
+				this.directions = this.getDirectionsForDifficulty();
 				this.renderGrid();
 
 				// If game is completed, show completion status but don't save

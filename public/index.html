@@ -42,9 +42,15 @@
 	</div>
 
 	<div id="dashboard-container" style="display: none;">
-		<h1>Dashboard</h1>
+		<h1 class="dashboard-header">Dashboard</h1>
 
-		<div id="game-options">
+		<div class="game-options">
+			<h3>Game Difficulty</h3>
+			<div class="difficulty-selector">
+				<button class="difficulty-btn" data-difficulty="easy">Easy</button>
+				<button class="difficulty-btn" data-difficulty="medium">Medium</button>
+				<button class="difficulty-btn" data-difficulty="hard">Hard</button>
+			</div>
 			<button id="new-game-btn" onclick="startNewGame()">Start New Game</button>
 		</div>
 
@@ -63,8 +69,11 @@
 		<div id="game-grid"></div>
 		<div id="game-summary" style="display: none;"></div>
 		<div id="word-list"></div>
-		<button onclick="returnToDashboard()" class="return-btn">Return to Dashboard</button>
-		<button onclick="logout()">Logout</button>
+		<div id="nav-controls">
+			<button onclick="returnToDashboard()" class="return-btn">Return to Dashboard</button>
+			<button onclick="logout()">Logout</button>
+		</div>
+		
 	</div>
 
 	<script src="/js/auth.js"></script>

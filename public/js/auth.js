@@ -50,18 +50,6 @@ function stopTokenCheck() {
 	}
 }
 
-function showGame() {
-	document.getElementById('loading').style.display = 'none';
-	document.getElementById('auth-container').style.display = 'none';
-	document.getElementById('game-container').style.display = 'block';
-	document.getElementById('app-toolbar').style.display = 'flex';
-
-	startTokenCheck();
-
-	game = new WordSearchGame();
-	game.startNewGame();
-}
-
 function logout() {
 	localStorage.removeItem('token');
 	showAuth();
@@ -88,6 +76,7 @@ async function register() {
 	const confirmPassword = document.getElementById('reg-confirm-password').value;
 
 	// Basic validation
+	// TODO: Add more robust validation
 	if (password !== confirmPassword) {
 		alert('Passwords do not match!');
 		return;
@@ -152,7 +141,7 @@ async function checkAuthStatus() {
 
         if (response.ok) {
             loading.style.display = 'none';
-            showDashboard();  // Show dashboard page instead of game
+            showDashboard(); 
         } else {
             localStorage.removeItem('token');
             loading.style.display = 'none';
@@ -184,6 +173,7 @@ function getAuthHeaders() {
 }
 
 // Use this for authenticated requests
+// TODO: Actually use this, lol
 async function authenticatedFetch(url, options = {}) {
 	checkTokenExpiration();
 	const headers = getAuthHeaders();
@@ -260,8 +250,41 @@ function showDashboard() {
 	document.getElementById('game-container').style.display = 'none';
 	document.getElementById('dashboard-container').style.display = 'block';
 	document.getElementById('app-toolbar').style.display = 'flex';
+	
+	initializeDifficultyButtons();
 
 	loadGamesList();
+}
+
+
+function initializeDifficultyButtons() {
+    const buttons = document.querySelectorAll('.difficulty-btn');
+    // Set default difficulty
+	buttons.forEach(btn => btn.classList.remove('selected'));
+    const defaultDifficulty = 'medium';
+    document.querySelector(`[data-difficulty="${defaultDifficulty}"]`).classList.add('selected');
+
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove selected class from all buttons
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            // Add selected class to clicked button
+            button.classList.add('selected');
+        });
+    });
+}
+
+function startNewGame() {
+    const selectedDifficulty = document.querySelector('.difficulty-btn.selected').dataset.difficulty;
+    game = new WordSearchGame();
+    game.setDifficulty(selectedDifficulty);
+    game.startNewGame(true);
+
+	startTokenCheck();
+    
+    // Hide dashboard and show game
+    document.getElementById('dashboard-container').style.display = 'none';
+    document.getElementById('game-container').style.display = 'block';
 }
 
 async function loadGamesList() {
@@ -285,7 +308,7 @@ function renderGamesList(games, containerId) {
     container.innerHTML = '';
 
     if (games.length === 0) {
-        container.innerHTML = '<p>No games found</p>';
+        container.innerHTML = '<p class="no-games-found">No games found</p>';
         return;
     }
 
@@ -296,19 +319,17 @@ function renderGamesList(games, containerId) {
         const lastSaved = new Date(game.lastSaved).toLocaleString();
         const wordsFound = game.foundWords ? game.foundWords.length : 0;
         const totalWords = game.words ? game.words.length : 0;
-
         gameCard.innerHTML = `
             <div class="info">
                 <p>Last played: ${lastSaved}</p>
+				<p>Difficulty: ${game.difficulty}</p>
                 <p>Progress: ${wordsFound}/${totalWords} words found</p>
             </div>
             <div class="actions">
-                <button onclick="loadGame('${game._id}')">
+                <button class="continue-btn" onclick="loadGame('${game._id}')">
                     ${game.completed ? 'View' : 'Continue'}
                 </button>
-                ${!game.completed ? `
-                    <button onclick="deleteGame('${game._id}')">Delete</button>
-                ` : ''}
+				<button class="delete-btn" onclick="deleteGame('${game._id}')">Delete</button>
             </div>
         `;
 
@@ -323,18 +344,13 @@ function returnToDashboard() {
     showDashboard();
 }
 
-async function startNewGame() {
-    document.getElementById('dashboard-container').style.display = 'none';
-    document.getElementById('game-container').style.display = 'block';
-    game = new WordSearchGame();
-    game.startNewGame();
-}
-
 async function loadGame(gameId) {
     document.getElementById('dashboard-container').style.display = 'none';
     document.getElementById('game-container').style.display = 'block';
     game = new WordSearchGame();
-    await game.loadGameState(gameId);
+    await game.loadGameState(gameId).then(() => {
+		startTokenCheck();
+	});
 }
 
 async function deleteGame(gameId) {

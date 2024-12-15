@@ -24,7 +24,12 @@ const gameSchema = new mongoose.Schema({
     completed: {
         type: Boolean,
         default: false
-    }
+    },
+	difficulty: {
+		type: String,
+		enum: ['easy', 'medium', 'hard'],
+		default: 'medium'
+	}
 });
 
 module.exports = mongoose.model('Game', gameSchema);
