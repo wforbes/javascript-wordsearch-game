@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Word Search Game</title>
+	<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+	<div id="auth-container">
+		<div id="login-form">
+			<h2>Login</h2>
+			<input type="text" id="username" placeholder="Username">
+			<input type="password" id="password" placeholder="Password">
+			<button onclick="login()">Login</button>
+			<button onclick="showRegister()">Register</button>
+		</div>
+
+		<div id="register-form" style="display: none;">
+			<h2>Register</h2>
+			<input type="text" id="reg-username" placeholder="Username">
+			<input type="password" id="reg-password" placeholder="Password">
+			<input type="password" id="reg-confirm-password" placeholder="Confirm Password">
+			<button onclick="register()">Create Account</button>
+			<button onclick="showLogin()">Back to Login</button>
+		</div>
+	</div>
+
+	<div id="game-container" style="display: none;">
+		<div id="game-grid"></div>
+		<div id="word-list"></div>
+		<button onclick="saveProgress()">Save Progress</button>
+		<button onclick="logout()">Logout</button>
+	</div>
+
+	<script src="/js/auth.js"></script>
+	<script src="/js/game.js"></script>
+</body>
+</html>
