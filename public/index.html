@@ -33,10 +33,28 @@
 		</div>
 	</div>
 
+	<div id="welcome-container" style="display: none;">
+		<h1>Welcome to Word Search!</h1>
+
+		<div id="game-options">
+			<button id="new-game-btn" onclick="startNewGame()">Start New Game</button>
+		</div>
+
+		<div id="active-games">
+			<h2>Games in Progress</h2>
+			<div id="active-games-list"></div>
+		</div>
+
+		<div id="completed-games">
+			<h2>Completed Games</h2>
+			<div id="completed-games-list"></div>
+		</div>
+	</div>
+
 	<div id="game-container" style="display: none;">
 		<div id="game-grid"></div>
 		<div id="word-list"></div>
-		<button onclick="saveProgress()">Save Progress</button>
+		<button onclick="returnToWelcome()" class="return-btn">Return to Games List</button>
 		<button onclick="logout()">Logout</button>
 	</div>
 

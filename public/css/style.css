@@ -23,6 +23,7 @@
   text-decoration: line-through;
   color: #81c784;
 }
+
 #game-grid {
   display: grid;
   grid-template-columns: repeat(10, 40px);
@@ -128,4 +129,41 @@ button {
   100% {
     transform: rotate(360deg);
   }
+}
+
+#welcome-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.game-card {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.game-card .info {
+    flex-grow: 1;
+}
+
+.game-card .actions {
+    display: flex;
+    gap: 10px;
+}
+
+#new-game-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2em;
+    margin: 20px 0;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 }

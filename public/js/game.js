@@ -13,17 +13,29 @@ class WordSearchGame {
 		this.selectedCells = [];
 		this.foundWords = new Set();
 		this.gameActive = false;
+		this.autoSaveTimeout = null;
 	}
 
 	startNewGame() {
+		// Clear any existing auto-save timeout
+		if (this.autoSaveTimeout) {
+			clearTimeout(this.autoSaveTimeout);
+			this.autoSaveTimeout = null;
+		}
+
 		checkTokenExpiration();
 		this.grid = [];
 		this.words = [];
 		this.foundWords.clear();
 		this.selectedCells = [];
 		this.gameActive = true;
-		this.initializeGrid();
-		this.renderGrid();
+		this.loadGameState().then(loaded => {
+			if (!loaded) {
+				// If no saved game, start new one
+				this.initializeGrid();
+			}
+			this.renderGrid();
+		});
 	}
 
 	initializeGrid() {
@@ -109,7 +121,15 @@ class WordSearchGame {
 
 	checkGameCompletion() {
 		if (this.foundWords.size === this.words.length) {
-			checkTokenExpiration();
+			// Clear any pending auto-save
+			if (this.autoSaveTimeout) {
+				clearTimeout(this.autoSaveTimeout);
+				this.autoSaveTimeout = null;
+			}
+
+			// Save the final state of the game
+			this.saveGameState();
+
 			this.gameActive = false;
 			setTimeout(() => {
 				const playAgain = confirm('Congratulations! You found all the words! Would you like to play again?');
@@ -162,14 +182,10 @@ class WordSearchGame {
 	}
 
 	renderGrid() {
-		if (!this.gameActive) {
-			this.showGameSummary();
-			return;
-		}
-
 		const gameGrid = document.getElementById('game-grid');
 		gameGrid.innerHTML = '';
 
+		// Always render the grid, even for completed games
 		for (let i = 0; i < this.size; i++) {
 			for (let j = 0; j < this.size; j++) {
 				const cell = document.createElement('div');
@@ -178,24 +194,93 @@ class WordSearchGame {
 				cell.dataset.row = i;
 				cell.dataset.col = j;
 
-				// Add event listeners for selection
-				cell.addEventListener('mousedown', (e) => this.startSelection(e, i, j));
-				cell.addEventListener('mouseover', (e) => this.updateSelection(e, i, j));
-				cell.addEventListener('mouseup', () => this.endSelection());
+				// Check if this cell is part of any found word
+				if (this.isCellInFoundWord(i, j)) {
+					cell.classList.add('found');
+				}
+
+				// Only add event listeners if game is active
+				if (this.gameActive) {
+					cell.addEventListener('mousedown', (e) => this.startSelection(e, i, j));
+					cell.addEventListener('mouseover', (e) => this.updateSelection(e, i, j));
+					cell.addEventListener('mouseup', () => this.endSelection());
+				}
 
 				gameGrid.appendChild(cell);
 			}
 		}
 
-		// Add mouse leave handler for the grid
-		gameGrid.addEventListener('mouseleave', () => {
-			if (this.isSelecting) this.endSelection();
-		});
-
-		// Prevent text selection on the grid
-		gameGrid.addEventListener('selectstart', (e) => e.preventDefault());
+		// Add mouse leave handler for the grid only if game is active
+		if (this.gameActive) {
+			gameGrid.addEventListener('mouseleave', () => {
+				if (this.isSelecting) this.endSelection();
+			});
+			gameGrid.addEventListener('selectstart', (e) => e.preventDefault());
+		}
 
 		this.renderWordList();
+	}
+
+	// Add this new helper method to check if a cell is part of a found word
+	isCellInFoundWord(row, col) {
+		for (const word of this.foundWords) {
+			// For each possible starting position that could include our cell
+			for (let startOffset = 0; startOffset < word.length; startOffset++) {
+				// Check each direction
+				for (const [dRow, dCol] of this.directions) {
+					// Calculate potential start position
+					const startRow = row - (dRow * startOffset);
+					const startCol = col - (dCol * startOffset);
+
+					// Check if a word starts here and includes our cell
+					if (this.checkWordAtPosition(word, startRow, startCol, dRow, dCol, row, col)) {
+						return true;
+					}
+
+					// Check reverse direction
+					const revStartRow = row + (dRow * (startOffset - (word.length - 1)));
+					const revStartCol = col + (dCol * (startOffset - (word.length - 1)));
+					if (this.checkWordAtPosition(word, revStartRow, revStartCol, -dRow, -dCol, row, col)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	checkWordAtPosition(word, startRow, startCol, dRow, dCol, targetRow, targetCol) {
+		// First check if the word would be in bounds
+		for (let i = 0; i < word.length; i++) {
+			const currentRow = startRow + (dRow * i);
+			const currentCol = startCol + (dCol * i);
+
+			// Check bounds
+			if (currentRow < 0 || currentRow >= this.size ||
+				currentCol < 0 || currentCol >= this.size) {
+				return false;
+			}
+		}
+
+		// Now check if the word matches and includes our target cell
+		let foundTarget = false;
+		for (let i = 0; i < word.length; i++) {
+			const currentRow = startRow + (dRow * i);
+			const currentCol = startCol + (dCol * i);
+
+			// Check if this is our target cell
+			if (currentRow === targetRow && currentCol === targetCol) {
+				foundTarget = true;
+			}
+
+			// Check if letter matches
+			if (this.grid[currentRow][currentCol] !== word[i]) {
+				return false;
+			}
+		}
+
+		// Return true only if we found the target cell and the word matches
+		return foundTarget;
 	}
 
 	renderWordList() {
@@ -287,6 +372,7 @@ class WordSearchGame {
 				cell.classList.remove('selected');
 				cell.classList.add('found');
 			}
+			this.scheduleAutoSave();
 		});
 
 		// Mark the word in the word list
@@ -305,6 +391,103 @@ class WordSearchGame {
 				dCol / scale === validDCol
 			);
 		});
+	}
+
+	scheduleAutoSave() {
+
+		// Don't schedule saves for completed games
+		if (!this.gameActive) {
+			return;
+		}
+
+		if (this.autoSaveTimeout) {
+			clearTimeout(this.autoSaveTimeout);
+		}
+		this.autoSaveTimeout = setTimeout(() => {
+			this.saveGameState()
+		}, 1000);
+	}
+
+	async saveGameState() {
+		// Don't save if we're just viewing a completed game
+		if (!this.gameActive) {
+			return;
+		}
+
+		try {
+			const gameState = {
+				grid: this.grid,
+				words: this.words,
+				foundWords: Array.from(this.foundWords),
+				completed: this.foundWords.size === this.words.length
+			};
+
+			const response = await fetch('/api/game/save', {
+				method: 'POST',
+				headers: getAuthHeaders(),
+				body: JSON.stringify(gameState)
+			});
+
+			if (!response.ok) {
+				console.error('Failed to save game state');
+			}
+		} catch (error) {
+			console.error('Error saving game state:', error);
+		}
+	}
+
+	async loadGameState(gameId) {
+		try {
+			const url = gameId
+				? `/api/game/load/${gameId}`
+				: '/api/game/load';
+
+			const response = await fetch(url, {
+				method: 'GET',
+				headers: getAuthHeaders()
+			});
+
+			if (response.ok) {
+				const gameState = await response.json();
+				this.grid = gameState.grid;
+				this.words = gameState.words;
+				this.foundWords = new Set(gameState.foundWords);
+				this.gameActive = !gameState.completed;
+
+				// Render the grid without saving a new game state
+				this.renderGrid();
+
+				// If game is completed, show completion status but don't save
+				if (gameState.completed) {
+					this.showCompletedGameView();
+				}
+
+				return true;
+			}
+
+			if (response.status === 404) {
+				console.log('No saved game found, starting new game');
+				return false;
+			}
+
+			console.error('Failed to load game state:', response.status);
+			return false;
+		} catch (error) {
+			console.error('Error loading game state:', error);
+			return false;
+		}
+	}
+
+	showCompletedGameView() {
+		const gameContainer = document.getElementById('game-container');
+		const completionMessage = document.createElement('div');
+		completionMessage.className = 'completion-message';
+		completionMessage.innerHTML = `
+			<h2>Completed Game</h2>
+			<p>Words found: ${this.foundWords.size}/${this.words.length}</p>
+			<button onclick="returnToWelcome()">Return to Games List</button>
+		`;
+		gameContainer.appendChild(completionMessage);
 	}
 }
 
