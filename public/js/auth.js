@@ -54,6 +54,7 @@ function showGame() {
 	document.getElementById('loading').style.display = 'none';
 	document.getElementById('auth-container').style.display = 'none';
 	document.getElementById('game-container').style.display = 'block';
+	document.getElementById('app-toolbar').style.display = 'flex';
 
 	startTokenCheck();
 
@@ -124,12 +125,14 @@ async function checkAuthStatus() {
     const authContainer = document.getElementById('auth-container');
     const gameContainer = document.getElementById('game-container');
     const welcomeContainer = document.getElementById('welcome-container');
+	const appToolbar = document.getElementById('app-toolbar');
 
     // Show loading, hide others
     loading.style.display = 'block';
     authContainer.style.display = 'none';
     gameContainer.style.display = 'none';
     welcomeContainer.style.display = 'none';
+	appToolbar.style.display = 'none';
 
     const token = localStorage.getItem('token');
     if (!token) {
@@ -167,6 +170,8 @@ function showAuth() {
 	document.getElementById('loading').style.display = 'none';
 	document.getElementById('auth-container').style.display = 'block';
 	document.getElementById('game-container').style.display = 'none';
+	document.getElementById('welcome-container').style.display = 'none';
+	document.getElementById('app-toolbar').style.display = 'none';
 }
 
 // Helper function to get auth headers
@@ -254,7 +259,8 @@ function showWelcome() {
 	document.getElementById('auth-container').style.display = 'none';
 	document.getElementById('game-container').style.display = 'none';
 	document.getElementById('welcome-container').style.display = 'block';
-	
+	document.getElementById('app-toolbar').style.display = 'flex';
+
 	loadGamesList();
 }
 

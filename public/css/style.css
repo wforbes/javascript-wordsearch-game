@@ -1,3 +1,135 @@
+:root {
+    /* Color Palette */
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+    --accent-color: #e74c3c;
+    --background-color: #f5f6fa;
+    --surface-color: #ffffff;
+    --text-primary: #2c3e50;
+    --text-secondary: #7f8c8d;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding-top: 60px; /* Account for fixed toolbar */
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.card {
+    background-color: var(--surface-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Dashboard styling */
+.dashboard-header {
+    margin-bottom: 30px;
+}
+
+.dashboard-section {
+    margin-bottom: 40px;
+}
+
+.game-card {
+    background-color: var(--surface-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: transform 0.2s;
+}
+
+.game-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Game board styling */
+.grid-cell {
+    background-color: var(--surface-color);
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.grid-cell.selected {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.grid-cell.found {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: #2c3e50;
+    color: white;
+    display: flex;
+	flex-direction: row;
+    justify-content: space-between; /* This ensures left/right spacing */
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+    width: 100%; /* Ensure full width */
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    flex: 0 1 auto; /* Allow shrinking but not growing */
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Align content to the right */
+    flex: 0 1 auto; /* Allow shrinking but not growing */
+    margin-left: auto; /* Push to the right */
+	padding-right: 20px;
+}
+.toolbar-link {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.toolbar-link:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.toolbar-button {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.toolbar-button:hover {
+    background-color: #c0392b;
+}
+
 .grid-cell {
   width: 40px;
   height: 40px;
