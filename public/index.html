@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Word Search Game</title>
 	<link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
-	<div id="auth-container">
+	<div id="loading">
+		<div class="loading-spinner"></div>
+		<div>Loading...</div>
+	</div>
+
+	<div id="auth-container" style="display: none;">
 		<div id="login-form">
 			<h2>Login</h2>
 			<input type="text" id="username" placeholder="Username">
@@ -36,4 +43,5 @@
 	<script src="/js/auth.js"></script>
 	<script src="/js/game.js"></script>
 </body>
+
 </html>

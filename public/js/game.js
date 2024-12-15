@@ -16,6 +16,7 @@ class WordSearchGame {
 	}
 
 	startNewGame() {
+		checkTokenExpiration();
 		this.grid = [];
 		this.words = [];
 		this.foundWords.clear();
@@ -108,6 +109,7 @@ class WordSearchGame {
 
 	checkGameCompletion() {
 		if (this.foundWords.size === this.words.length) {
+			checkTokenExpiration();
 			this.gameActive = false;
 			setTimeout(() => {
 				const playAgain = confirm('Congratulations! You found all the words! Would you like to play again?');

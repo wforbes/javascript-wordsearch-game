@@ -3,7 +3,6 @@ const Game = require('../models/game');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 
-// Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
 	const authHeader = req.headers['authorization'];
 	const token = authHeader && authHeader.split(' ')[1];
