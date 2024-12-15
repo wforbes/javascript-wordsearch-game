@@ -24,7 +24,7 @@ async function login() {
 			document.getElementById('password').value = '';
 
 			localStorage.setItem('token', data.token);
-			showWelcome();
+			showDashboard();
 		} else {
 			alert('Login failed. Please check your credentials.');
 		}
@@ -124,14 +124,14 @@ async function checkAuthStatus() {
     const loading = document.getElementById('loading');
     const authContainer = document.getElementById('auth-container');
     const gameContainer = document.getElementById('game-container');
-    const welcomeContainer = document.getElementById('welcome-container');
+    const dashboardContainer = document.getElementById('dashboard-container');
 	const appToolbar = document.getElementById('app-toolbar');
 
     // Show loading, hide others
     loading.style.display = 'block';
     authContainer.style.display = 'none';
     gameContainer.style.display = 'none';
-    welcomeContainer.style.display = 'none';
+    dashboardContainer.style.display = 'none';
 	appToolbar.style.display = 'none';
 
     const token = localStorage.getItem('token');
@@ -152,7 +152,7 @@ async function checkAuthStatus() {
 
         if (response.ok) {
             loading.style.display = 'none';
-            showWelcome();  // Show welcome page instead of game
+            showDashboard();  // Show dashboard page instead of game
         } else {
             localStorage.removeItem('token');
             loading.style.display = 'none';
@@ -170,7 +170,7 @@ function showAuth() {
 	document.getElementById('loading').style.display = 'none';
 	document.getElementById('auth-container').style.display = 'block';
 	document.getElementById('game-container').style.display = 'none';
-	document.getElementById('welcome-container').style.display = 'none';
+	document.getElementById('dashboard-container').style.display = 'none';
 	document.getElementById('app-toolbar').style.display = 'none';
 }
 
@@ -254,11 +254,11 @@ async function handleTokenError() {
 	showAuth();
 }
 
-function showWelcome() {
+function showDashboard() {
 	document.getElementById('loading').style.display = 'none';
 	document.getElementById('auth-container').style.display = 'none';
 	document.getElementById('game-container').style.display = 'none';
-	document.getElementById('welcome-container').style.display = 'block';
+	document.getElementById('dashboard-container').style.display = 'block';
 	document.getElementById('app-toolbar').style.display = 'flex';
 
 	loadGamesList();
@@ -316,22 +316,22 @@ function renderGamesList(games, containerId) {
     });
 }
 
-function returnToWelcome() {
+function returnToDashboard() {
     if (game) {
         game.saveGameState();  // Save current progress
     }
-    showWelcome();
+    showDashboard();
 }
 
 async function startNewGame() {
-    document.getElementById('welcome-container').style.display = 'none';
+    document.getElementById('dashboard-container').style.display = 'none';
     document.getElementById('game-container').style.display = 'block';
     game = new WordSearchGame();
     game.startNewGame();
 }
 
 async function loadGame(gameId) {
-    document.getElementById('welcome-container').style.display = 'none';
+    document.getElementById('dashboard-container').style.display = 'none';
     document.getElementById('game-container').style.display = 'block';
     game = new WordSearchGame();
     await game.loadGameState(gameId);

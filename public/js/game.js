@@ -17,6 +17,14 @@ class WordSearchGame {
 	}
 
 	startNewGame() {
+		const gameGrid = document.getElementById('game-grid');
+		const gameSummary = document.getElementById('game-summary');
+		const wordList = document.getElementById('word-list');
+
+		gameGrid.style.display = 'grid';
+		wordList.style.display = 'block';
+		gameSummary.style.display = 'none';
+
 		// Clear any existing auto-save timeout
 		if (this.autoSaveTimeout) {
 			clearTimeout(this.autoSaveTimeout);
@@ -145,21 +153,20 @@ class WordSearchGame {
 
 	showGameSummary() {
 		const gameGrid = document.getElementById('game-grid');
+		const gameSummary = document.getElementById('game-summary');
 		const wordList = document.getElementById('word-list');
-
-		// Clear the game area
-		gameGrid.innerHTML = '';
-		wordList.innerHTML = '';
-
-		// Show summary message
-		const summaryDiv = document.createElement('div');
-		summaryDiv.className = 'game-summary';
-		summaryDiv.innerHTML = `
+	
+		// Hide grid and word list
+		gameGrid.style.display = 'none';
+		wordList.style.display = 'none';
+	
+		// Show and populate summary
+		gameSummary.style.display = 'block';
+		gameSummary.innerHTML = `
 			<h2>Game Complete!</h2>
 			<p>You found all ${this.words.length} words!</p>
 			<button onclick="game.startNewGame()">Start New Game</button>
 		`;
-		gameGrid.appendChild(summaryDiv);
 	}
 
 	endSelection() {
@@ -485,7 +492,7 @@ class WordSearchGame {
 		completionMessage.innerHTML = `
 			<h2>Completed Game</h2>
 			<p>Words found: ${this.foundWords.size}/${this.words.length}</p>
-			<button onclick="returnToWelcome()">Return to Games List</button>
+			<button onclick="returnToDashboard()">Return to Dashboard</button>
 		`;
 		gameContainer.appendChild(completionMessage);
 	}

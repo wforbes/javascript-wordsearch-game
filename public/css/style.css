@@ -1,22 +1,30 @@
 :root {
     /* Color Palette */
     --primary-color: #3498db;
+    --primary-color-dark: #2980b9;
     --secondary-color: #2ecc71;
+    --secondary-color-dark: #27ae60;
     --accent-color: #e74c3c;
+    --accent-color-dark: #c0392b;
     --background-color: #f5f6fa;
     --surface-color: #ffffff;
     --text-primary: #2c3e50;
     --text-secondary: #7f8c8d;
+    --border-color: #e0e0e0;
+    --success-color: #4CAF50;
+    --success-color-dark: #45a049;
 }
 
+/* Base Styles */
 body {
     background-color: var(--background-color);
     color: var(--text-primary);
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    padding-top: 60px; /* Account for fixed toolbar */
+    padding-top: 60px;
 }
 
+/* Layout Components */
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -31,7 +39,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* Dashboard styling */
+/* Dashboard Components */
 .dashboard-header {
     margin-bottom: 30px;
 }
@@ -45,7 +53,10 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     padding: 20px;
-    margin-bottom: 15px;
+    margin: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     transition: transform 0.2s;
 }
 
@@ -53,40 +64,31 @@ body {
     transform: translateY(-2px);
 }
 
-/* Game board styling */
-.grid-cell {
-    background-color: var(--surface-color);
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    transition: all 0.2s;
+.game-card .info {
+    flex-grow: 1;
 }
 
-.grid-cell.selected {
-    background-color: var(--primary-color);
-    color: white;
+.game-card .actions {
+    display: flex;
+    gap: 10px;
 }
 
-.grid-cell.found {
-    background-color: var(--secondary-color);
-    color: white;
-}
-
+/* Toolbar Components */
 .toolbar {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     height: 60px;
-    background-color: #2c3e50;
+    background-color: var(--text-primary);
     color: white;
     display: flex;
-	flex-direction: row;
-    justify-content: space-between; /* This ensures left/right spacing */
+    justify-content: space-between;
     align-items: center;
     padding: 0 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     z-index: 1000;
-    width: 100%; /* Ensure full width */
+    width: 100%;
 }
 
 .toolbar-left {
@@ -130,16 +132,30 @@ body {
     background-color: #c0392b;
 }
 
+/* Game Grid Components */
 .grid-cell {
-  width: 40px;
-  height: 40px;
-  border: 1px solid #ccc;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 20px;
-  cursor: pointer;
-  user-select: none; /* Prevent text selection */
+    width: 40px;
+    height: 40px;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+}
+
+.grid-cell.selected {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.grid-cell.found {
+    background-color: var(--secondary-color);
+    color: white;
 }
 
 .selected {
@@ -157,10 +173,21 @@ body {
 }
 
 #game-grid {
-  display: grid;
-  grid-template-columns: repeat(10, 40px);
-  gap: 2px;
-  margin: 20px auto;
+    display: grid;
+    grid-template-columns: repeat(10, 40px);
+    gap: 2px;
+    margin: 20px auto;
+    width: 400px; /* or whatever your grid width is */
+}
+
+#game-summary {
+    width: 400px; /* match grid width */
+    margin: 20px auto;
+    padding: 20px;
+    text-align: center;
+    background-color: var(--surface-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 #auth-container {
@@ -200,36 +227,6 @@ button {
   font-family: monospace;
 }
 
-.game-summary {
-  text-align: center;
-  padding: 20px;
-  margin: 20px;
-}
-
-.game-summary button {
-  padding: 10px 20px;
-  font-size: 16px;
-  margin-top: 20px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.game-summary button:hover {
-  background-color: #45a049;
-}
-
-#loading {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 1.2em;
-  color: #666;
-}
-
 #loading {
   position: fixed;
   top: 0;
@@ -263,29 +260,10 @@ button {
   }
 }
 
-#welcome-container {
+#dashboard-container {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
-}
-
-.game-card {
-    border: 1px solid #ccc;
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.game-card .info {
-    flex-grow: 1;
-}
-
-.game-card .actions {
-    display: flex;
-    gap: 10px;
 }
 
 #new-game-btn {
