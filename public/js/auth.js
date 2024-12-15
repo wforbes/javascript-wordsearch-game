@@ -25,10 +25,11 @@ async function login() {
 }
 
 function showGame() {
-	document.getElementById('auth-container').style.display = 'none';
-	document.getElementById('game-container').style.display = 'block';
-	game.initializeGrid();
-	game.renderGrid();
+    document.getElementById('auth-container').style.display = 'none';
+    document.getElementById('game-container').style.display = 'block';
+    // Initialize and start the game only when showing the game screen
+    game = new WordSearchGame();
+    game.startNewGame();
 }
 
 function logout() {

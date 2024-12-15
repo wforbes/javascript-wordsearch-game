@@ -12,6 +12,17 @@ class WordSearchGame {
 		this.isSelecting = false;
 		this.selectedCells = [];
 		this.foundWords = new Set();
+		this.gameActive = false;
+	}
+
+	startNewGame() {
+		this.grid = [];
+		this.words = [];
+		this.foundWords.clear();
+		this.selectedCells = [];
+		this.gameActive = true;
+		this.initializeGrid();
+		this.renderGrid();
 	}
 
 	initializeGrid() {
@@ -95,9 +106,65 @@ class WordSearchGame {
 		}
 	}
 
+	checkGameCompletion() {
+		if (this.foundWords.size === this.words.length) {
+			this.gameActive = false;
+			setTimeout(() => {
+				const playAgain = confirm('Congratulations! You found all the words! Would you like to play again?');
+				if (playAgain) {
+					this.startNewGame();
+				} else {
+					// Optional: Show a summary or return to main menu
+					this.showGameSummary();
+				}
+			}, 500);
+		}
+	}
 
+	showGameSummary() {
+		const gameGrid = document.getElementById('game-grid');
+		const wordList = document.getElementById('word-list');
+
+		// Clear the game area
+		gameGrid.innerHTML = '';
+		wordList.innerHTML = '';
+
+		// Show summary message
+		const summaryDiv = document.createElement('div');
+		summaryDiv.className = 'game-summary';
+		summaryDiv.innerHTML = `
+			<h2>Game Complete!</h2>
+			<p>You found all ${this.words.length} words!</p>
+			<button onclick="game.startNewGame()">Start New Game</button>
+		`;
+		gameGrid.appendChild(summaryDiv);
+	}
+
+	endSelection() {
+		if (!this.isSelecting || !this.gameActive) return;
+
+		this.isSelecting = false;
+		const word = this.getSelectedWord();
+
+		const foundWord = this.words.find(w =>
+			w === word || w === word.split('').reverse().join('')
+		);
+
+		if (foundWord && !this.foundWords.has(foundWord)) {
+			this.foundWords.add(foundWord);
+			this.markWordAsFound(foundWord);
+			this.checkGameCompletion();
+		} else {
+			this.clearSelection();
+		}
+	}
 
 	renderGrid() {
+		if (!this.gameActive) {
+			this.showGameSummary();
+			return;
+		}
+
 		const gameGrid = document.getElementById('game-grid');
 		gameGrid.innerHTML = '';
 
@@ -182,27 +249,6 @@ class WordSearchGame {
 		this.updateCellHighlight();
 	}
 
-	endSelection() {
-		if (!this.isSelecting) return;
-
-		this.isSelecting = false;
-		const word = this.getSelectedWord();
-
-		// Check if word exists in our word list
-		const foundWord = this.words.find(w =>
-			w === word || w === word.split('').reverse().join('')
-		);
-
-		if (foundWord && !this.foundWords.has(foundWord)) {
-			this.foundWords.add(foundWord);
-			this.markWordAsFound(foundWord);
-			this.checkGameCompletion();
-		} else {
-			// Clear selection if word not found
-			this.clearSelection();
-		}
-	}
-
 	getSelectedWord() {
 		return this.selectedCells.map(cell =>
 			this.grid[cell.row][cell.col]
@@ -258,16 +304,7 @@ class WordSearchGame {
 			);
 		});
 	}
-
-	checkGameCompletion() {
-		if (this.foundWords.size === this.words.length) {
-			setTimeout(() => {
-				alert('Congratulations! You found all the words!');
-				// You can add more completion logic here
-			}, 500);
-		}
-	}
 }
 
-// Initialize game
-const game = new WordSearchGame();
+// Initialize game and start first game
+let game;
